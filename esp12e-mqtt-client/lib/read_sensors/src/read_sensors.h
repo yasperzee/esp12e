@@ -7,7 +7,8 @@
 
   ************************************************************/
   /*-----------------------------------------------------------
-    Version 0,7     Yasperzee   5'19    TEMT6000 support
+    Version 0.8     Yasperzee   5'19    Cleaning for Release
+    Version 0.7     Yasperzee   5'19    TEMT6000 support
     Version 0.6     Yasperzee   4'19    Add vcc_batt to values
     Version 0.5     Yasperzee   4'19    Add ESP12E
     Version 0.4     Yasperzee   4'19    Functions to classes and to librarys
@@ -19,7 +20,7 @@
 
   -----------------------------------------------------------
 */
-#include <SFE_BMP180.h>
+#include <Adafruit_BMP085_U.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_Sensor.h>

@@ -9,6 +9,7 @@
 
 ***********************************************************/
 /*-----------------------------------------------------------
+    Version 0,3     Yasperzee   5'19    Cleaning for Release
     Version 0.2     Yasperzee   4'19    Functions to classes and to librarys
                                         IDE: Atom.io w/ platform
     Version 0.1     Yasperzee   3'19    Created
@@ -26,7 +27,6 @@ class MqttClient {
 
    private:
        char FAIL_COUNT[10];
-       char VCC_BATT[10];
        char payload[100];
        char topic[150];
        char topicSubscribe[100];

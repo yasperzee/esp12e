@@ -12,16 +12,21 @@
 
     The circuit:    - ESP12 with   BMP180, BMP280 or BME280 sensor:
                                     i2c:    SDA -> gpio4, SCL -> gpio5
+                                    BMP280 and BME280:
+                                    - pin 6(SDO) to GND sets I2C address to 0X76
+                                    - pin 6(SDO) to Vcc sets I2C address to 0X77
+
                     - ESP01 with   BMP180, BMP280 or BME280 sensor:
-                                    i2c:    SDA -> gpio0, SCL -> gpio2
+                                    i2c:    SDA -> gpio 0, SCL -> gpio2
                     - ESP01/ESP12 --> DHTxx Sensor: gpio2 --> DHTxx data
                     - ESP12E with   TEMT6000 sensor:
                                     TEMT6000 Signal --> ESP12E A0
 
-    Librarys:       https://github.com/adafruit/Adafruit_BME280_Library
-                    https://github.com/adafruit/Adafruit_Sensor
+    Librarys:       https://github.com/adafruit/Adafruit_Sensor
+                    https://github.com/adafruit/Adafruit_BME280_Library
                     https://github.com/adafruit/Adafruit_BMP280_Library
-                    https://github.com/sparkfun/BMP180_Breakout
+                    https://github.com/adafruit/Adafruit_BMP085_Unified
+            REMOVE use adafruit lib instead https://github.com/sparkfun/BMP180_Breakout
                     https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFi
                     https://github.com/knolleary/pubsubclient
                     https://github.com/adafruit/DHT-sensor-library
@@ -34,8 +39,10 @@
 
 # TODO: Support for BME280 sensor w/ temperature, humidity & pressure.
         - git clone https://github.com/sparkfun/SparkFun_BME280_Arduino_Library
+# TODO: use Adafruit_BMP085_Unified lib instead of SparkFun one for BMP180
 
-    Version 1.3    Yasperzee   5'19    TEMT6000 support
+    Version 1.4    Yasperzee   5'19     Cleaning for Release
+    Version 1.3    Yasperzee   5'19     TEMT6000 support
     Version 1.2    Yasperzee   4'19     ESP.getVcc
 
     Version 1.1    Yasperzee   4'19     Functions to classes and to librarys
@@ -92,7 +99,7 @@ MqttClient mqttClient;
 ReadSensors readSensors;
 Values values;
 
-#if defined READ_VCC
+#if defined NODE_FEATURE_READ_VCC
 ADC_MODE(ADC_VCC);
 #endif
 
@@ -109,7 +116,7 @@ void setup()
     Serial.println(ESP.getFlashChipRealSize());
     Serial.print("FlashChipSize ");
     Serial.println(ESP.getFlashChipSize());
-    #if defined READ_VCC
+    #if defined NODE_FEATURE_READ_VCC
     Serial.print("Vcc ");
     Serial.println(ESP.getVcc());
     #endif
@@ -123,7 +130,6 @@ void loop()
         {
         Serial.println("mqtt_connect FAILED!");
         mqttClient.connect_network();
-        //while(1); // assert ??
         }
 
     #if defined SENSOR_DHT11 or defined SENSOR_DHT22
@@ -134,7 +140,7 @@ void loop()
         values = readSensors.read_bmp280();
     #elif defined(SENSOR_BME280)
         values = readSensors.read_bme280();
-    #elif defined(SENSOR_TEMT6000)
+    #elif defined(SENSOR_TEMT6000_ALONE)
         values = readSensors.read_temt6000();
     #else
         Serial.println("No Sensor selected!");
@@ -145,17 +151,17 @@ void loop()
         values.als      = ERROR_VALUE;
     #endif
 
-    #if defined READ_VCC
+    #if defined NODE_FEATURE_READ_VCC
     values.vcc_batt = ESP.getVcc();
     #endif
 
     // #TODO: publish only if valid sensor values.
     // We always read atleast temperature, so if temp == ERROR_VALUE, do not publish
-    //if(values.temperature != ERROR_VALUE)
-    //{
+    if(values.temperature != ERROR_VALUE)
+    {
     mqttClient.mqtt_publish(values);
     //client.loop();
-    //}
+    }
     // delay to next publish
     #if defined(DEEP_SLEEP) // #TODO: some semafore here
         // ToDo: better solution required!

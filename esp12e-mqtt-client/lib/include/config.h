@@ -11,6 +11,10 @@
 
 /*----------------  Version history  -------------------------------------------
 
+    Version 1.5     Yasperzee   5'19    Cleaning for Release
+    Version 1.4     Yasperzee   5'19    Publish Vcc separately
+                                        Change SENSOR_FEAT to NODE_FEATURE
+    Version 1.3     Yasperzee   5'19    BMP280 support
     Version 1.2     Yasperzee   5'19    TEMT6000 support
     Version 1.1     Yasperzee   5'19    #define SW_VERSION
     Version 1.0     Yasperzee   4'19    #define READ_VCC
@@ -23,6 +27,8 @@
     Version 0.3     Yasperzee   4'19    Added some "automation" to definition creation.
     Version 0.2     Yasperzee   4'19    Read NodeInfo & Protocol from node.
     Version 0.1     Yasperzee   3'19    Created.
+
+
 ------------------------------------------------------------------------------*/
 
 //*********************** Node specific CONGFIGURATIONS ************************
@@ -34,14 +40,14 @@
     //#define DEEP_SLEEP
     //#define LIGHT_SLEEP
 
-// Read Battery voltage
-    //#define READ_VCC
+// Read and publish Vcc measured internally
+    #define NODE_FEATURE_READ_VCC // ESP12E only
 
 // DHT sensor publish Temperature only
     //#define DHT_TEMP_ONLY
 
 // AppSW version. 1.X for nonos/ESP12E(ESP01) and v2.X for esp-idf/esp32
-    #define SW_VERSION "v0.8"
+    #define SW_VERSION "v0.9"
 
 // Select node-mcu in use
     //#define MCU_ESP01
@@ -53,12 +59,13 @@
     #define NODE_NUM "04"
 
 // Select sensor connected
-    //#define SENSOR_BMP180
+    #define SENSOR_TEMT6000 // togeher with an other sensor
+    #define SENSOR_BMP180
     //#define SENSOR_BMP280
     //#define SENSOR_BME280
     //#define SENSOR_DHT22
     //#define SENSOR_DHT11
-    #define SENSOR_TEMT6000
+    //#define SENSOR_TEMT6000_ALONE
 
 // Select mosquitto server
     //#define MQTT_SERVER "192.168.10.52" // Local Rpi3 with mosquitto
@@ -111,52 +118,67 @@
 #endif
 
 #if defined SENSOR_DHT11
-    #define SENSOR_FEAT_TEMP
-    #ifndef DHT_TEMP_ONLY
-        #define SENSOR_FEAT_HUMID
-    #endif
-    #define DHT_TYPE 	DHT11
     #define SENSOR_STR "DHT11"
-#elif defined SENSOR_DHT22
-    #define SENSOR_FEAT_TEMP
+    #define DHT_TYPE DHT11
+    #define TEMP
     #ifndef DHT_TEMP_ONLY
-        #define SENSOR_FEAT_HUMID
+        #define NODE_FEATURE_HUMID
     #endif
-    #define DHT_TYPE 	DHT22
+
+#elif defined SENSOR_DHT22
     #define SENSOR_STR "DHT22"
+    #define DHT_TYPE DHT22
+    #define NODE_FEATURE_TEMP
+    #ifndef DHT_TEMP_ONLY
+        #define NODE_FEATURE_HUMID
+    #endif
+
 #elif defined SENSOR_BMP180
-    #define SENSOR_FEAT_TEMP
-    #define SENSOR_FEAT_BARO
-    #define SENSOR_FEAT_ALTI
     #define SENSOR_STR "BMP180"
+    #define NODE_FEATURE_TEMP
+    #define NODE_FEATURE_BARO
+    #define NODE_FEATURE_ALTI
+    #if defined SENSOR_TEMT6000
+        #define NODE_FEATURE_AMBIENT_LIGHT
+    #endif
+
 #elif defined SENSOR_BMP280
-    #define SENSOR_FEAT_TEMP
-    #define SENSOR_FEAT_BARO
-    #define SENSOR_FEAT_ALTI
     #define SENSOR_STR "BMP280"
+    #define NODE_FEATURE_TEMP
+    #define NODE_FEATURE_BARO
+    #define NODE_FEATURE_ALTI
+    #if defined SENSOR_TEMT6000
+        #define NODE_FEATURE_AMBIENT_LIGHT
+    #endif
+
 #elif defined SENSOR_BME280
-    #define SENSOR_FEAT_TEMP
-    #define SENSOR_FEAT_BARO
-    #define SENSOR_FEAT_ALTI
-    #define SENSOR_FEAT_HUMID
     #define SENSOR_STR "BME280"
-#elif defined SENSOR_TEMT6000
-    #define SENSOR_FEAT_AMBIENT_LIGHT
+    #define NODE_FEATURE_TEMP
+    #define NODE_FEATURE_BARO
+    #define NODE_FEATURE_ALTI
+    #define NODE_FEATURE_HUMID
+    #if defined SENSOR_TEMT6000
+        #define NODE_FEATURE_AMBIENT_LIGHT
+    #endif
+
+#elif defined SENSOR_TEMT6000_ALONE
+    #define NODE_FEATURE_AMBIENT_LIGHT
     #define SENSOR_STR "TEMT6000"
+
 #else
     #define SENSOR_STR "Unknown"
 #endif
 
 #ifndef LOCATION_NODE
-#define LOCATION_NODE "Unknown"
+    #define LOCATION_NODE "Unknown"
 #endif
 
 #ifndef TOPIC_ROOM
-#define TOPIC_ROOM "Unknown"
+    #define TOPIC_ROOM "Unknown"
 #endif
 
 #ifndef NODE_NUM
-#define NODE_NUM "00"
+    #define NODE_NUM "00"
 #endif
 
 const int second = 1000;
@@ -168,7 +190,7 @@ const int second = 1000;
     #endif
     const int RECONNECT_DELAY   = 10*second; // Try to reconnect mqtt server
 #else // Release
-    const int PUBLISH_INTERVAL  = 15*60*second; // 15*60 second interval to publish values --> 24h cycle
+    const int PUBLISH_INTERVAL  = 5*60*second; // 15*60 seconds interval to publish values --> 24h cycle
     const int RECONNECT_DELAY   = 30*second; // Try to reconnect mqtt server
 #endif
 
@@ -180,6 +202,7 @@ const int second = 1000;
     #define TOPIC_BARO      "Ilmanpaine"
     #define TOPIC_ALTIT     "Korkeus"
     #define TOPIC_ALS       "Valoisuus"
+    #define TOPIC_VCC       "Vcc"
 #else
     #define TOPIC_LOCATION  LOCATION_NODE
     #define TOPIC_TEMP      "Temperature"
@@ -187,6 +210,7 @@ const int second = 1000;
     #define TOPIC_BARO      "Barometer"
     #define TOPIC_ALTIT     "Altitude"
     #define TOPIC_ALS       "AmbientLight"
+    #define TOPIC_VCC       "Vcc"
 #endif
 
     #define TOPIC_NODEINFO  "NodeInfo"

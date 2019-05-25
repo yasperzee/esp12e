@@ -5,7 +5,8 @@
 *******************************************************************************/
 
 /*----------------- Version history --------------------------------------------
-
+    Version 0.9     Yasperzee   5'19    Cleaning for Release
+    Version 0.8     Yasperzee   5'19    Change SENSOR_FEAT to NODE_FEATURE
     Version 0.7     Yasperzee   5'19    TEMT6000 support
     Version 0.6     Yasperzee   4'19    publish vcc_batt
     Version 0.5     Yasperzee   4'19    #define __DEBUG__
@@ -63,7 +64,6 @@ int MqttClient::mqtt_connect()
             Serial.print("\n");
             Serial.println("MQTT connected.");
             //Serial.print(topicSubscribe);
-            //Serial.print("\n");
             #endif
             }
         else
@@ -107,17 +107,14 @@ void MqttClient::mqtt_publish(Values values)
     sprintf(FAIL_COUNT, "%s", ""); // Clean
     itoa(values.fail_count, FAIL_COUNT, 10);
 
-    sprintf(VCC_BATT, "%s", ""); // Clean
-    itoa(values.vcc_batt, VCC_BATT, 10);
-
     // BEST PRACTICE: Do not use leading '/'
     sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_NODEINFO);
-    sprintf(MQTT_DEVICE_LABEL, "%s/%s/%s/%s/%s", MCU_ID, SENSOR_STR, NODE_ID, FAIL_COUNT, VCC_BATT);
-    sprintf(payload, "{\"NodeInfo\": %s}", MQTT_DEVICE_LABEL); // Adds the value
+    sprintf(MQTT_DEVICE_LABEL, "%s/%s/%s/%s/%s", MCU_ID, SENSOR_STR, NODE_ID, FAIL_COUNT );
+    sprintf(payload, "{\"NodeInfo\": %s}", MQTT_DEVICE_LABEL);
     client.publish(topic, payload);
     #if defined __DEBUG__
     Serial.println("Publishing Nodeinfo to local mosquitto server");
-    Serial.println(payload);
+    //Serial.println(payload);
     #endif
 
     // ************ publish TopicInfo **********************
@@ -125,14 +122,14 @@ void MqttClient::mqtt_publish(Values values)
     // BEST PRACTICE: Do not use leading '/'
     sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_TOPICINFO );
     sprintf(topic_info, "%s/%s", TOPIC_LOCATION, TOPIC_ROOM );
-    sprintf(payload, "{\"TopicInfo\": %s}", topic_info); // Adds the value
+    sprintf(payload, "{\"TopicInfo\": %s}", topic_info);
     client.publish(topic, payload);
     #if defined __DEBUG__
-    Serial.println("Publishing topic_info to local mosquitto server");
-    Serial.println(payload);
+    Serial.print("Publishing topic_info to local mosquitto server");
+    //Serial.println(payload);
     #endif
 
-#if defined SENSOR_FEAT_TEMP
+#if defined NODE_FEATURE_TEMP
     // ************ publish Temperature **********************
     double temperature = values.temperature;
     if (temperature == ERROR_VALUE)
@@ -145,16 +142,17 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
         sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_TEMP );
-        sprintf(payload, "{\"Lampotila\": %s}", str_sensor); // Adds the value
+        sprintf(payload, "{\"Lampotila\": %s}", str_sensor);
         client.publish(topic, payload);
-        #if defined __DEBUG__
-        Serial.println("");
-        Serial.println("Publishing Temperature to local mosquitto server");
-        #endif
+        //#if defined __DEBUG__
+        Serial.print("Publishing Temperature to local mosquitto server: ");
+        Serial.println(str_sensor);
+        //endif
+
         }
 #endif
 
-#if defined SENSOR_FEAT_BARO
+#if defined NODE_FEATURE_BARO
     // ************ publish Barometer **********************
     double barometer = values.pressure;
     if (barometer == ERROR_VALUE)
@@ -164,24 +162,20 @@ void MqttClient::mqtt_publish(Values values)
         }
     else
         {
-        //Serial.print("Barometer: ");
-        //Serial.print(barometer);
-        //Serial.println(" mbar");
         dtostrf(barometer, 6, 1, str_sensor);
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
         sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_BARO );
-        //sprintf(payload, "{\"Barometer\": %s}", str_sensor); // Adds the value
         sprintf(payload, "{\"Ilmanpaine\": %s}", str_sensor); // Adds the value
         client.publish(topic, payload);
-        #if defined __DEBUG__
-        Serial.println("Publishing Barometer to local mosquitto server");
-        //Serial.println("");
-        #endif
+        //#if defined __DEBUG__
+        Serial.print("Publishing Barometer to local mosquitto server: ");
+        Serial.println(str_sensor);
+        //#endif
         }
 #endif
 
-#if defined SENSOR_FEAT_ALTI
+#if defined NODE_FEATURE_ALTI
     // ************ publish Altitude **********************
     double altitude = values.altitude;
     if (altitude == ERROR_VALUE)
@@ -191,23 +185,20 @@ void MqttClient::mqtt_publish(Values values)
         }
     else
         {
-        //Serial.print("Altitude: ");
-        //Serial.print(altitude);
-        //Serial.println(" meters");
         dtostrf(altitude, 7, 1, str_sensor);
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
         sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_ALTIT );
-        sprintf(payload, "{\"Korkeus\": %s}", str_sensor); // Adds the value
+        sprintf(payload, "{\"Korkeus\": %s}", str_sensor);
         client.publish(topic, payload);
-        #if defined __DEBUG__
-        Serial.println("Publishing Altitude to local mosquitto server");
-        //Serial.println("");
-        #endif
+        //#if defined __DEBUG__
+        Serial.print("Publishing Altitude to local mosquitto server: ");
+        Serial.println(str_sensor);
+        //#endif
         }
 #endif
 
-#if defined SENSOR_FEAT_HUMID
+#if defined NODE_FEATURE_HUMID
     // ************ publish Humidity **********************
     double humidity = values.humidity;
     if (humidity == ERROR_VALUE)
@@ -216,39 +207,47 @@ void MqttClient::mqtt_publish(Values values)
         }
     else
         {
-        //Serial.print("Humidity: ");
-        //Serial.print(humidity);
-        //Serial.println(" %");
         dtostrf(humidity, 6, 1, str_sensor);
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
         sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_HUMID );
         sprintf(payload, "{\"Ilmankosteus\": %s}", str_sensor); // Adds the value
         client.publish(topic, payload);
-        #if defined __DEBUG__
-        Serial.println("Publishing Humidity to local mosquitto server");
-        //Serial.println("");
-        #endif
+        //#if defined __DEBUG__
+        Serial.print("Publishing Humidity to local mosquitto server: ");
+        Serial.println(str_sensor);
+        //#endif
         }
 #endif
 
-#if defined SENSOR_FEAT_AMBIENT_LIGHT
+#if defined NODE_FEATURE_AMBIENT_LIGHT
     // ************ publish AmbientLight **********************
     double als = values.als;
         dtostrf(als, 6, 1, str_sensor);
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
         sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_ALS );
-        sprintf(payload, "{\"Valoisuus\": %s}", str_sensor); // Adds the value
+        sprintf(payload, "{\"Valoisuus\": %s}", str_sensor);
         client.publish(topic, payload);
-        Serial.print(topic);
-        Serial.println(payload);
-        #if defined __DEBUG__
-        Serial.println("Publishing AmbientLight to local mosquitto server");
-        //Serial.println("");
-        #endif
-
+        //#if defined __DEBUG__
+        Serial.print("Publishing AmbientLight to local mosquitto server: ");
+        Serial.println(str_sensor);
+        //#endif
     #endif
+
+    #if defined NODE_FEATURE_READ_VCC
+        // ************ publish Vcc **********************M
+            itoa(values.vcc_batt, str_sensor, 10);
+            sprintf(payload, "%s", ""); // Cleans the payload
+            // BEST PRACTICE: Do not use leading '/'
+            sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_VCC );
+            sprintf(payload, "{\"Vcc\": %s}", str_sensor);
+            client.publish(topic, payload);
+            //#if defined __DEBUG__
+            Serial.print("Publishing Vcc to local mosquitto server: ");
+            Serial.println(str_sensor);
+            //#endif
+        #endif
     } // publish
 
 
