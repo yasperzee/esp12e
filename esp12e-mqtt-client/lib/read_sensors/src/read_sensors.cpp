@@ -47,7 +47,7 @@ void displaySensorDetails(void)
 #if defined SENSOR_DHT11 or defined SENSOR_DHT22
 Values ReadSensors::read_dhtXXX(void)
     {
-    double T,H;
+    float T,H;
     Values values;
     int RETRYCOUNT = 5;
     DHT dht(DHT_PIN, DHT_TYPE);
@@ -75,15 +75,15 @@ Values ReadSensors::read_dhtXXX(void)
         }
     while (--RETRYCOUNT);
 
-    #ifndef DHT_TEMP_ONLY
-    H = dht.readHumidity();
-    values.humidity = H;
-    if (isnan(H))
-       { // Even if HUMID sensor "ON", skip also if TEMP ok but HUMID failed
-       Serial.println(F("Failed to read DHT HUMID!"));
-       values.humidity = ERROR_VALUE;
-       }
-    #endif
+        #ifndef DHT_TEMP_ONLY
+        H = dht.readHumidity();
+        values.humidity = H;
+        if (isnan(H))
+           { // Even if HUMID sensor "ON", skip also if TEMP ok but HUMID failed
+           Serial.println(F("Failed to read DHT HUMID!"));
+           values.humidity = ERROR_VALUE;
+           }
+        #endif
 
     if (values.fail_count > MAX_RETRYCOUNT)
         {
@@ -100,7 +100,7 @@ Values ReadSensors::read_dhtXXX(void)
 Values ReadSensors::read_bmp180()
     {
     char bmp180_status;
-    double T,P,p0;
+    float T,P,p0;
     Values values;
 
     Adafruit_BMP085_Unified bmp180 = Adafruit_BMP085_Unified(10085);
@@ -121,22 +121,22 @@ Values ReadSensors::read_bmp180()
         sensors_event_t event;
         bmp180.getEvent(&event);
         /* Display some basic information on this sensor */
-        #if defined __DEBUG__
+        #if defined TRACE_INFOM
         //displaySensorDetails()
-        sensor_t sensor;
+        sensor_t sensor;M
         bmp180.getSensor(&sensor);
-        Serial.println("------------------------------------");
-        Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-        Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-        Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-        Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" hPa");
-        Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" hPa");
-        Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" hPa");
-        Serial.println("------------------------------------");
-        Serial.println("");
+            Serial.println("------------------------------------");
+            Serial.print  ("Sensor:       "); Serial.println(sensor.name);
+            Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
+            Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
+            Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" hPa");
+            Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" hPa");
+            Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" hPa");
+            Serial.println("------------------------------------");
+            Serial.println("");
         #endif
 
-    /* Display the results (barometric pressure is measure in hPa) */
+        /* Display the results (barometric pressure is measure in hPa) */
         if (!event.pressure)
             {
             values.temperature = ERROR_VALUE;
@@ -148,57 +148,38 @@ Values ReadSensors::read_bmp180()
             {
             /* Display atmospheric pressue in hPa */
             values.pressure = event.pressure;
-            #if defined __DEBUG__
-            Serial.print("Pressure:    ");
-            Serial.print(event.pressure);
-            Serial.println(" hPa");
-            #endif
             /* First we get the current temperature from the BMP085 */
             float temperature;
             bmp180.getTemperature(&temperature);
             values.temperature = temperature;
-            #if defined __DEBUG__
-            Serial.print("Temperature: ");
-            Serial.print(values.temperature );
-            Serial.println(" C");
-            #endif
             /* Then convert the atmospheric pressure, and SLP to altitude         */
             /* Update this next line with the current SLP for better results      */
             float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
             values.altitude = (bmp180.pressureToAltitude(seaLevelPressure, event.pressure));
-            #if defined __DEBUG__
-            Serial.print("Altitude:    ");
-            Serial.print(values.altitude);
-            Serial.println(" m");
-            #endif
-            pinMode(ALS_PIN, INPUT);
-            double reading = analogRead(ALS_PIN); //Read light level
-            //double square_ratio = reading / 1023.0; //Get percent of maximum value (1023)
-            //square_ratio = pow(square_ratio, 2.0);
-            values.als = reading;
-            #if defined __DEBUG__
-            Serial.print("Ambient Light: ");
-            Serial.println(values.als);
+            //Serial.print("values.altitude: ");
+            //Serial.println(values.altitude);
+            #if defined NODE_FEATURE_AMBIENT_LIGHT
+                pinMode(ALS_PIN, INPUT);
+                float reading = analogRead(ALS_PIN); //Read light level
+                //float square_ratio = reading / 1023.0; //Get percent of maximum value (1023)
+                //square_ratio = pow(square_ratio, 2.0);
+                values.als = reading;
             #endif
             }
         }
+        return values;
     } //read_bmp180
 #endif
 
-#if defined SENSOR_TEMT6000_ALONE
+#if defined SENSOR_TEMT6000
 Values ReadSensors::read_temt6000()
     {
     Values values;
     pinMode(ALS_PIN, INPUT);
-    double reading = analogRead(ALS_PIN); //Read light level
-    double square_ratio = reading / 1023.0; //Get percent of maximum value (1023)
+    float reading = analogRead(ALS_PIN); //Read light level
+    float square_ratio = reading / 1023.0; //Get percent of maximum value (1023)
     square_ratio = pow(square_ratio, 2.0);
     values.als = reading;
-    #if defined __DEBUG__
-    Serial.print("read_temt6000: ");
-    Serial.print(values.als);
-    Serial.print("\n");
-    #endif
     return values;
     } //read_temt6000
 #endif
@@ -234,11 +215,13 @@ Values ReadSensors::read_bmp280()
         Serial.println(values.altitude);
         #endif
 
-        pinMode(ALS_PIN, INPUT);
-        double reading = analogRead(ALS_PIN); //Read light level
-        //double square_ratio = reading / 1023.0; //Get percent of maximum value (1023)
-        //square_ratio = pow(square_ratio, 2.0);
-        values.als = reading;
+        #if defined NODE_FEATURE_AMBIENT_LIGHT
+            pinMode(ALS_PIN, INPUT);
+            float reading = analogRead(ALS_PIN); //Read light level
+            //float square_ratio = reading / 1023.0; //Get percent of maximum value (1023)
+            //square_ratio = pow(square_ratio, 2.0);
+            values.als = reading;
+        #endif
         #if defined __DEBUG__
         Serial.print("temt6000: ");
         Serial.print(values.als);
@@ -253,7 +236,7 @@ Values ReadSensors::read_bmp280()
 Values ReadSensors::read_bme280()
     {
     char bme280_status;
-    double T,P,H,p0;
+    float T,P,H,p0;
     Values values;
 
     Adafruit_BME280 bme280;
@@ -292,8 +275,14 @@ Values ReadSensors::read_bme280()
         Serial.println("BME280: Altitude: ");
         Serial.print(values.altitude);
         Serial.print("\n");
+        #endif
 
-
+        #if defined NODE_FEATURE_AMBIENT_LIGHT
+            pinMode(ALS_PIN, INPUT);
+            float reading = analogRead(ALS_PIN); //Read light level
+            //float square_ratio = reading / 1023.0; //Get percent of maximum value (1023)
+            //square_ratio = pow(square_ratio, 2.0);
+            values.als = reading;
         #endif
         }
     return values;

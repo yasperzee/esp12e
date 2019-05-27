@@ -107,7 +107,7 @@ void setup()
     {
     Serial.begin(BAUDRATE);
 
-#if defined __DEBUG__
+#if defined TRACE_
     Serial.print("\nChipID ");
     Serial.println(ESP.getChipId());
     Serial.print("CoreVersion ");
@@ -154,7 +154,9 @@ void loop()
     #if defined NODE_FEATURE_READ_VCC
     values.vcc_batt = ESP.getVcc();
     #endif
-
+    #if defined TRACE_INFO
+    Serial.println("MAIN: EXIT read_sensor");
+    #endif
     // #TODO: publish only if valid sensor values.
     // We always read atleast temperature, so if temp == ERROR_VALUE, do not publish
     if(values.temperature != ERROR_VALUE)

@@ -5,6 +5,7 @@
 *******************************************************************************/
 
 /*----------------- Version history --------------------------------------------
+    Version 1.0     Yasperzee   5'19    Explicitly set the ESP8266 to be a WiFi-client.
     Version 0.9     Yasperzee   5'19    Cleaning for Release
     Version 0.8     Yasperzee   5'19    Change SENSOR_FEAT to NODE_FEATURE
     Version 0.7     Yasperzee   5'19    TEMT6000 support
@@ -16,6 +17,7 @@
     Version 0.2     Yasperzee   4'19    Reads NodeInfo from node
     Version 0.1     Yasperzee   3'19    Created
 
+# TODO: Finetune wifi power consuption
 ------------------------------------------------------------------------------*/
 using namespace std;
 
@@ -30,9 +32,13 @@ PubSubClient client(mqtt_client);
 
 void MqttClient::connect_network()
     {
-    // Connect to WiFi network with SSID and password
+    /* Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
+    would try to act as both a client and an access-point and could cause
+    network-issues with your other WiFi-devices on your WiFi-network. */
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
-    #if defined __DEBUG__
+
+    #if defined TRACE_INFO
     Serial.println("Connecting to ");
     Serial.println(ssid);
     #endif
@@ -60,7 +66,7 @@ int MqttClient::mqtt_connect()
         {
         if (client.connect(MQTT_CLIENT_ID))
             {
-            #if defined __DEBUG__
+            #if defined TRACE_INFO
             Serial.print("\n");
             Serial.println("MQTT connected.");
             //Serial.print(topicSubscribe);
@@ -71,7 +77,7 @@ int MqttClient::mqtt_connect()
             int reconn = 0;
             while (reconn < 5)
                 {
-                #if defined __DEBUG__
+                #if defined TRACE_INFO
                 Serial.print("\n");
                 Serial.print("MQTT re-connecting ");
                 Serial.print(MQTT_SERVER);
@@ -80,7 +86,7 @@ int MqttClient::mqtt_connect()
                 reconn++;
                 if (client.connect(MQTT_CLIENT_ID))
                     {
-                    #if defined __DEBUG__
+                    #if defined TRACE_INFO
                     Serial.print("\n");
                     Serial.println("MQTT re-connected.");
                     //Serial.print(topicSubscribe);
@@ -93,7 +99,7 @@ int MqttClient::mqtt_connect()
         }
     else
         {
-        #if defined __DEBUG__
+        #if defined TRACE_INFO
         Serial.println("");
         Serial.println("MQTT already connected.");
         #endif
@@ -104,6 +110,9 @@ int MqttClient::mqtt_connect()
 void MqttClient::mqtt_publish(Values values)
     {
     // ************ publish NodeInfo **********************
+    #if defined TRACE_INFO
+    Serial.println("Entering mqtt_publish");
+    #endif
     sprintf(FAIL_COUNT, "%s", ""); // Clean
     itoa(values.fail_count, FAIL_COUNT, 10);
 
@@ -113,7 +122,7 @@ void MqttClient::mqtt_publish(Values values)
     sprintf(payload, "{\"NodeInfo\": %s}", MQTT_DEVICE_LABEL);
     client.publish(topic, payload);
     #if defined __DEBUG__
-    Serial.println("Publishing Nodeinfo to local mosquitto server");
+    Serial.println("Publishing Nodeinfo.");
     //Serial.println(payload);
     #endif
 
@@ -125,16 +134,16 @@ void MqttClient::mqtt_publish(Values values)
     sprintf(payload, "{\"TopicInfo\": %s}", topic_info);
     client.publish(topic, payload);
     #if defined __DEBUG__
-    Serial.print("Publishing topic_info to local mosquitto server");
+    Serial.println("Publishing topic_info.");
     //Serial.println(payload);
     #endif
 
 #if defined NODE_FEATURE_TEMP
     // ************ publish Temperature **********************
-    double temperature = values.temperature;
+    float temperature = values.temperature;
     if (temperature == ERROR_VALUE)
         {
-        Serial.print("temperature == ERROR_VALUE \n");
+        Serial.print("Temperature == ERROR_VALUE! \n");
         }
     else
         {
@@ -145,7 +154,7 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "{\"Lampotila\": %s}", str_sensor);
         client.publish(topic, payload);
         //#if defined __DEBUG__
-        Serial.print("Publishing Temperature to local mosquitto server: ");
+        Serial.print("Publishing Temperature:  ");
         Serial.println(str_sensor);
         //endif
 
@@ -154,10 +163,10 @@ void MqttClient::mqtt_publish(Values values)
 
 #if defined NODE_FEATURE_BARO
     // ************ publish Barometer **********************
-    double barometer = values.pressure;
+    float barometer = values.pressure;
     if (barometer == ERROR_VALUE)
         {
-        Serial.print("Barometer == ERROR_VALUE");
+        Serial.print("Barometer == ERROR_VALUE!");
         Serial.println("");
         }
     else
@@ -169,7 +178,7 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "{\"Ilmanpaine\": %s}", str_sensor); // Adds the value
         client.publish(topic, payload);
         //#if defined __DEBUG__
-        Serial.print("Publishing Barometer to local mosquitto server: ");
+        Serial.print("Publishing Barometer:  ");
         Serial.println(str_sensor);
         //#endif
         }
@@ -177,10 +186,10 @@ void MqttClient::mqtt_publish(Values values)
 
 #if defined NODE_FEATURE_ALTI
     // ************ publish Altitude **********************
-    double altitude = values.altitude;
+    float altitude = values.altitude;
     if (altitude == ERROR_VALUE)
         {
-        Serial.print("Altitude == ERROR_VALUE");
+        Serial.print("Altitude == ERROR_VALUE!");
         Serial.println("");
         }
     else
@@ -192,7 +201,7 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "{\"Korkeus\": %s}", str_sensor);
         client.publish(topic, payload);
         //#if defined __DEBUG__
-        Serial.print("Publishing Altitude to local mosquitto server: ");
+        Serial.print("Publishing Altitude : ");
         Serial.println(str_sensor);
         //#endif
         }
@@ -200,10 +209,10 @@ void MqttClient::mqtt_publish(Values values)
 
 #if defined NODE_FEATURE_HUMID
     // ************ publish Humidity **********************
-    double humidity = values.humidity;
+    float humidity = values.humidity;
     if (humidity == ERROR_VALUE)
         {
-        Serial.print("Humidity == ERROR_VALUE");
+        Serial.print("Humidity == ERROR_VALUE!");
         }
     else
         {
@@ -214,7 +223,7 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "{\"Ilmankosteus\": %s}", str_sensor); // Adds the value
         client.publish(topic, payload);
         //#if defined __DEBUG__
-        Serial.print("Publishing Humidity to local mosquitto server: ");
+        Serial.print("Publishing Humidity: ");
         Serial.println(str_sensor);
         //#endif
         }
@@ -222,7 +231,7 @@ void MqttClient::mqtt_publish(Values values)
 
 #if defined NODE_FEATURE_AMBIENT_LIGHT
     // ************ publish AmbientLight **********************
-    double als = values.als;
+    float als = values.als;
         dtostrf(als, 6, 1, str_sensor);
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
@@ -230,7 +239,7 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "{\"Valoisuus\": %s}", str_sensor);
         client.publish(topic, payload);
         //#if defined __DEBUG__
-        Serial.print("Publishing AmbientLight to local mosquitto server: ");
+        Serial.print("Publishing AmbientLight:");
         Serial.println(str_sensor);
         //#endif
     #endif
@@ -244,7 +253,7 @@ void MqttClient::mqtt_publish(Values values)
             sprintf(payload, "{\"Vcc\": %s}", str_sensor);
             client.publish(topic, payload);
             //#if defined __DEBUG__
-            Serial.print("Publishing Vcc to local mosquitto server: ");
+            Serial.print("Publishing Vcc: ");
             Serial.println(str_sensor);
             //#endif
         #endif
