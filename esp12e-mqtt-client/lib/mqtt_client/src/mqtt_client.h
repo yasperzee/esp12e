@@ -37,4 +37,7 @@ class MqttClient {
        char topic_info[150];
 };
 
+#define MAX_ALS 20000
+#define MAX_VCC 5000
+
 #endif //MQTT_CLIENT_H

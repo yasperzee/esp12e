@@ -35,8 +35,8 @@ struct Values
     double pressure     = ERROR_VALUE;
     double altitude     = ERROR_VALUE;
     double humidity     = ERROR_VALUE;
-    double als          = 0;
-    int vcc_batt        = 0;
+    double als          = ERROR_VALUE;
+    double vcc_batt     = ERROR_VALUE;
     int fail_count      = 0;
     };
 
@@ -52,6 +52,10 @@ class ReadSensors {
 
 };
 
+
+//#define BMP280_ADDR BMP280_ADDRESS //(0x77) SDO = HIGH
+#define BMP280_ADDR BMP280_ADDRESS_ALT  //(0x76) SDO = LOW
+
 // max retry to read sensor before reboot
 #define MAX_RETRYCOUNT 50
 
@@ -59,7 +63,7 @@ class ReadSensors {
 #define ALTITUDE 129.0 // Altitude of Kalkunvuori, Tampere Finland. In meters
 
 #define DHT_PIN 2 // ESP01 and ESP12 uses gpio 2 for DHT11 / DHT22 sensor
-#if defined MCU_ESP01
+#ifdef MCU_ESP01
     const int i2c_sda = 0; // BMPXXX SDA --> gpio0 on ESP01
     const int i2c_scl = 2; // BMPXXX SCL --> gpio2 on ESP01
 #elif defined MCU_ESP12E

@@ -99,7 +99,7 @@ MqttClient mqttClient;
 ReadSensors readSensors;
 Values values;
 
-#if defined NODE_FEATURE_READ_VCC
+#ifdef NODE_FEATURE_READ_VCC
 ADC_MODE(ADC_VCC);
 #endif
 
@@ -107,7 +107,7 @@ void setup()
     {
     Serial.begin(BAUDRATE);
 
-#if defined TRACE_
+#ifdef TRACE_ESPINFO
     Serial.print("\nChipID ");
     Serial.println(ESP.getChipId());
     Serial.print("CoreVersion ");
@@ -116,7 +116,7 @@ void setup()
     Serial.println(ESP.getFlashChipRealSize());
     Serial.print("FlashChipSize ");
     Serial.println(ESP.getFlashChipSize());
-    #if defined NODE_FEATURE_READ_VCC
+    #ifdef NODE_FEATURE_READ_VCC
     Serial.print("Vcc ");
     Serial.println(ESP.getVcc());
     #endif
@@ -132,7 +132,7 @@ void loop()
         mqttClient.connect_network();
         }
 
-    #if defined SENSOR_DHT11 or defined SENSOR_DHT22
+    #ifdef SENSOR_DHT11 or defined SENSOR_DHT22
         values = readSensors.read_dhtXXX();
     #elif defined(SENSOR_BMP180)
         values = readSensors.read_bmp180();
@@ -149,32 +149,23 @@ void loop()
         values.pressure = ERROR_VALUE;
         values.altitude = ERROR_VALUE;
         values.als      = ERROR_VALUE;
+        values.vcc_batt = ERROR_VALUE;
     #endif
 
-    #if defined NODE_FEATURE_READ_VCC
+    #ifdef NODE_FEATURE_READ_VCC
     values.vcc_batt = ESP.getVcc();
     #endif
-    #if defined TRACE_INFO
-    Serial.println("MAIN: EXIT read_sensor");
-    #endif
-    // #TODO: publish only if valid sensor values.
-    // We always read atleast temperature, so if temp == ERROR_VALUE, do not publish
-    if(values.temperature != ERROR_VALUE)
-    {
+
+    // mqtt_publish-method publish valid values only
     mqttClient.mqtt_publish(values);
-    //client.loop();
-    }
+
     // delay to next publish
-    #if defined(DEEP_SLEEP) // #TODO: some semafore here
-        // ToDo: better solution required!
+    #ifdef DEEP_SLEEP // #TODO: check that all ready for Sleep
+        // ToDo: better solution required for DELAY!
         delay(1000); // give mqtt_publish() time to publish all
-        //Serial.println("DeepSleep...");
+            Serial.println("DeepSleep...");
         ESP.deepSleep(PUBLISH_INTERVAL * 1000); // microseconds
-    #elif defined(LIGHT_SLEEP)
-        //Serial.println("LightSleep...");
-        // light_sleep(PUBLISH_INTERVAL); // milliseconds
     #else
-        //Serial.println("Delay...");
         delay(PUBLISH_INTERVAL); // milliseconds
     #endif
     }
