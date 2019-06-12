@@ -135,14 +135,14 @@ void MqttClient::mqtt_publish(Values values)
     // ************ publish Temperature **********************
     if (values.temperature != ERROR_VALUE)
         {
-        dtostrf(values.temperature, 4, 1, str_sensor);
+        dtostrf(values.temperature, 7, 1, str_sensor);
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
         sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_TEMP );
         sprintf(payload, "{\"Lampotila\": %s}", str_sensor);
         client.publish(topic, payload);
         #ifdef TRACE_DEBUG
-        Serial.print("Publishing Temperature:  ");
+        Serial.print("Publishing Temperature: ");
         Serial.println(str_sensor);
         #endif
         }
@@ -158,21 +158,21 @@ void MqttClient::mqtt_publish(Values values)
     // ************ publish Barometer **********************
     if (values.pressure != ERROR_VALUE)
         {
-        dtostrf(values.pressure, 6, 1, str_sensor);
+        dtostrf(values.pressure, 7, 1, str_sensor);
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
         sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_BARO );
         sprintf(payload, "{\"Ilmanpaine\": %s}", str_sensor); // Adds the value
         client.publish(topic, payload);
         #ifdef TRACE_DEBUG
-        Serial.print("Publishing Barometer:  ");
+        Serial.print("Publishing Barometer  : ");
         Serial.println(str_sensor);
         #endif
         }
     #ifdef TRACE_DEBUG
     else
         {
-        Serial.println("Barometer == ERROR_VALUE!");
+        Serial.println("Barometer   == ERROR_VALUE!");
         }
     #endif
 #endif
@@ -188,14 +188,14 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "{\"Korkeus\": %s}", str_sensor);
         client.publish(topic, payload);
         #ifdef TRACE_DEBUG
-        Serial.print("Publishing Altitude : ");
+        Serial.print("Publishing Altitude   : ");
         Serial.println(str_sensor);
         #endif
         }
     #ifdef TRACE_DEBUG
     else
         {
-        Serial.println("Altitude == ERROR_VALUE!");
+        Serial.println("Altitude    == ERROR_VALUE!");
         }
     #endif
 #endif
@@ -211,30 +211,32 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "{\"Ilmankosteus\": %s}", str_sensor); // Adds the value
         client.publish(topic, payload);
         #ifdef TRACE_DEBUG
-        Serial.print("Publishing Humidity: ");
-        Serial.println(str_sensor);
+            Serial.print("Publishing Humidity   : ");
+            Serial.println(str_sensor);
         #endif
         }
     #ifdef TRACE_DEBUG
     else
         {
-        Serial.println("Humidity == ERROR_VALUE!");
+        Serial.println("Humidity    == ERROR_VALUE!");
         }
     #endif
+
+
 #endif
 
 #ifdef NODE_FEATURE_AMBIENT_LIGHT
     // ************ publish AmbientLight **********************
     if (values.als > 0 || values.als <= MAX_ALS)
         {
-        dtostrf(values.als, 6, 1, str_sensor);
+        dtostrf(values.als, 7, 1, str_sensor);
         sprintf(payload, "%s", ""); // Cleans the payload
         // BEST PRACTICE: Do not use leading '/'
         sprintf(topic, "%s/%s/%s", TOPIC_LOCATION, TOPIC_ROOM, TOPIC_ALS );
         sprintf(payload, "{\"Valoisuus\": %s}", str_sensor);
         client.publish(topic, payload);
         #ifdef TRACE_DEBUG
-        Serial.print("Publishing Lightness:  ");
+        Serial.print("Publishing Lightness  : ");
         Serial.println(str_sensor);
         #endif
         }
@@ -258,7 +260,7 @@ void MqttClient::mqtt_publish(Values values)
         sprintf(payload, "{\"Vcc\": %s}", str_sensor);
         client.publish(topic, payload);
         #ifdef TRACE_DEBUG
-        Serial.print("Publishing Vcc:       ");
+        Serial.print("Publishing Vcc        : ");
         Serial.println(str_sensor);
         #endif
         }

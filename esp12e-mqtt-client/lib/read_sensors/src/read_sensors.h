@@ -7,6 +7,7 @@
 
   ************************************************************/
   /*-----------------------------------------------------------
+    Version 0.9     Yasperzee   6'19    DHT sensors to separate module
     Version 0.8     Yasperzee   5'19    Cleaning for Release
     Version 0.7     Yasperzee   5'19    TEMT6000 support
     Version 0.6     Yasperzee   4'19    Add vcc_batt to values
@@ -24,8 +25,6 @@
 #include <Adafruit_BMP280.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_Sensor.h>
-#include <Wire.h>
-#include <DHT.h>
 #include <config.h>
 
 // values from sensor
@@ -42,7 +41,9 @@ struct Values
 
 class ReadSensors {
    public:
+       #if defined(SENSOR_DHT11) || defined(SENSOR_DHT22)
        Values read_dhtXXX(void);
+       #endif
        Values read_bmp180();
        Values read_bmp280();
        Values read_bme280();
@@ -56,13 +57,9 @@ class ReadSensors {
 //#define BMP280_ADDR BMP280_ADDRESS //(0x77) SDO = HIGH
 #define BMP280_ADDR BMP280_ADDRESS_ALT  //(0x76) SDO = LOW
 
-// max retry to read sensor before reboot
-#define MAX_RETRYCOUNT 50
-
 // #define ALTITUDE 119.0 // Altitude of Tampere-Pirkkala airport, Finland. In meters
 #define ALTITUDE 129.0 // Altitude of Kalkunvuori, Tampere Finland. In meters
 
-#define DHT_PIN 2 // ESP01 and ESP12 uses gpio 2 for DHT11 / DHT22 sensor
 #ifdef MCU_ESP01
     const int i2c_sda = 0; // BMPXXX SDA --> gpio0 on ESP01
     const int i2c_scl = 2; // BMPXXX SCL --> gpio2 on ESP01

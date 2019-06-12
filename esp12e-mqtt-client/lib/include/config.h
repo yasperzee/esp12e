@@ -33,19 +33,19 @@
 //*********************** Node specific Manual Configurations ******************
 
 // For RELEASE: 15min publish interval & Error traces only, comment 3 following lines.
+#define FIVE_MIN_PUB_CYCL // Effective on RELEASE only e.g any TRACE overrides this
 //#define TRACE_INFO // 36sec public interval & Informational traces
 //#define TRACE_DEBUG // 36sec public interval & Debug traces
-#define DEMO // Gives 10sec public interval & 4G-AP(Phone)
-#define TRACE_ESPINFO // print ESP chip information on boot
+//#define DEMO // Gives 10sec public interval & 4G-AP(Phone)
+//#define TRACE_ESPINFO // print ESP chip information on boot
 
 // Activate Sleep(s)
     //#define DEEP_SLEEP
     //#define LIGHT_SLEEP
 
 // Select sensor connected.
-
-    //#define SENSOR_BMP180
-    #define SENSOR_BMP280
+    #define SENSOR_BMP180
+    //#define SENSOR_BMP280
     //#define SENSOR_BME280
     //#define SENSOR_DHT22
     //#define SENSOR_DHT11
@@ -56,24 +56,24 @@
     #define NODE_FEATURE_BARO
     #define NODE_FEATURE_ALTI
     //#define NODE_FEATURE_HUMID
-    #define NODE_FEATURE_AMBIENT_LIGHT // ESP12E only. Uses same GPIO as READ_VCC!
+    //#define NODE_FEATURE_AMBIENT_LIGHT // ESP12E only. Uses same GPIO as READ_VCC!
     //#define NODE_FEATURE_READ_VCC // ESP12E only. Uses same GPIO as ALS!
 
 // DHT sensor publish Temperature only
     //#define DHT_TEMP_ONLY
 
 // AppSW version. 1.X for nonos/ESP12E(ESP01) and v2.X for esp-idf/esp32
-    #define SW_VERSION "v0.9"
+    #define SW_VERSION "v1.0"
 
 // Select node-mcu in use
-    //#define MCU_ESP01
-    #define MCU_ESP12E
+    #define MCU_ESP01
+    //#define MCU_ESP12E
 
 // Define number of node, default is "00"
-    //#define NODE_NUM "01"
+    #define NODE_NUM "01"
     //#define NODE_NUM "02"
     //#define NODE_NUM "03"
-    #define NODE_NUM "04"
+    //#define NODE_NUM "04"
     //#define NODE_NUM "05"
 
 //#ifdef DEMO
@@ -90,14 +90,14 @@
     #define MQTT_SERVER "192.168.10.63" // Local NP-510 with mosquitto
 
     // Uncomment one for room or define your ownone
-    //#define TOPIC_ROOM "Testing"  //NODE-00
+    //#define TOPIC_ROOM "IceBox"
     //#define TOPIC_ROOM "Olohuone" //NODE-01
     //#define TOPIC_ROOM "Ulkoilma" //NODE-02
     //#define TOPIC_ROOM "Keittio"  //NODE-03
-    #define TOPIC_ROOM "Parveke"    //NODE-04
-    //#define TOPIC_ROOM "MH-1"
+    //#define TOPIC_ROOM "Parveke"
+    #define TOPIC_ROOM "MH-1"
     //#define TOPIC_ROOM "MH-2"
-    //#define TOPIC_ROOM "MH-3"
+    //#define TOPIC_ROOM "MH-3" //NODE-04
     //#define TOPIC_ROOM "Eteinen"
     //#define TOPIC_ROOM "Partsi"
     //#define TOPIC_ROOM "Kph-1"
@@ -176,7 +176,11 @@ const int RECONNECT_DELAY = 30*second; // Timeout to reconnect mqtt server
 #elif defined TRACE_DEBUG or defined TRACE_INFO
     const int PUBLISH_INTERVAL  = 36*second; // 36 second interval --> 100 measurements / 1h
 #else // Release
-    const int PUBLISH_INTERVAL  = 15*60*second; // 15*60 seconds interval to publish values.
+    #ifdef FIVE_MIN_PUB_CYCL
+        const int PUBLISH_INTERVAL  = 5*60*second; // 5*60 seconds interval to publish values.
+    #else
+        const int PUBLISH_INTERVAL  = 15*60*second; // 15*60 seconds interval to publish values.
+    #endif
 #endif
     // mqtt: topic level definitions
     #ifdef LANGUAGE_FI
@@ -195,7 +199,15 @@ const int RECONNECT_DELAY = 30*second; // Timeout to reconnect mqtt server
         #define TOPIC_ALTIT     "Altitude"
         #define TOPIC_ALS       "AmbientLight"
         #define TOPIC_VCC       "Vcc"
-    #endif
+    #endif//*********************** Node specific Manual Configurations ******************
+
+// For RELEASE: 15min publish interval & Error traces only, comment 3 following lines.
+#define FIVE_MIN_PUB_CYCL // Effective on RELEASE only e.g any TRACE overrides this
+//#define TRACE_INFO // 36sec public interval & Informational traces
+//#define TRACE_DEBUG // 36sec public interval & Debug traces
+#define DEMO // Gives 10sec public interval & 4G-AP(Phone)
+#define TRACE_ESPINFO // print ESP chip information on boot
+//#define TRACE_ESPINFO // print ESP chip information on boot
 
     #define TOPIC_NODEINFO  "NodeInfo"
     #define TOPIC_TOPICINFO "TopicInfo"

@@ -92,8 +92,11 @@
 ------------------------------------------------------------------------------*/
 // includes
 #include <config.h>
-#include <read_sensors.h>
 #include <mqtt_client.h>
+#include <read_sensors.h>
+#if defined(SENSOR_DHT11) || defined(SENSOR_DHT22)
+#include <read_DHT_sensors.h>
+#endif
 
 MqttClient mqttClient;
 ReadSensors readSensors;
@@ -132,7 +135,7 @@ void loop()
         mqttClient.connect_network();
         }
 
-    #ifdef SENSOR_DHT11 or defined SENSOR_DHT22
+    #if defined(SENSOR_DHT11) || defined(SENSOR_DHT22)
         values = readSensors.read_dhtXXX();
     #elif defined(SENSOR_BMP180)
         values = readSensors.read_bmp180();

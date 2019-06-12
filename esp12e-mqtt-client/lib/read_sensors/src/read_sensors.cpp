@@ -8,6 +8,7 @@
 *******************************************************************************/
 
 /* ------------ Version history ------------------------------------------------
+    Version 1.4     Yasperzee   6'19    DHT sensors to separate module
     Version 1.3     Yasperzee   5'19    BMP280 Pressure from Pa to mBar(hPa)
     Version 1.2     Yasperzee   5'19    Cleaning for Release
     Version 1.1     Yasperzee   5'19    BMP280 support
@@ -45,58 +46,6 @@ void displaySensorDetails(Adafruit_BMP085_Unified bmp180)
     }
 #endif
 
-#ifdef SENSOR_DHT11 or defined SENSOR_DHT22
-Values ReadSensors::read_dhtXXX(void)
-    {
-    float T,H;
-    Values values;
-    int RETRYCOUNT = 5;
-    DHT dht(DHT_PIN, DHT_TYPE);
-    // Reading temperature or humidity takes about 250 milliseconds!
-    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-    // Read temperature as Celsius (the default)
-    do // Retry few times if readTemperature fails
-        {
-        dht.begin();
-        T = dht.readTemperature();
-        values.temperature = T;
-        // Check if temp read failed and exit early (to try again).
-        if (isnan(T))
-            {
-            Serial.println(F("Failed to read DHT TEMP!"));
-            values.temperature = ERROR_VALUE;
-            values.humidity = ERROR_VALUE; //let's assume HUMID will fail also if TEMP failed
-            delay(500); // #TODO: Light sleep or optimize / remove delay
-            values.fail_count ++;
-            }
-        else // TEMP read OK
-            {
-            break; // Go on and read HUMIDITY
-            }
-        }
-    while (--RETRYCOUNT);
-
-        #ifndef DHT_TEMP_ONLY
-        H = dht.readHumidity();
-        values.humidity = H;
-        if (isnan(H))
-           { // Even if HUMID sensor "ON", skip also if TEMP ok but HUMID failed
-           Serial.println(F("Failed to read DHT HUMID!"));
-           values.humidity = ERROR_VALUE;
-           }
-        #endif
-
-    if (values.fail_count > MAX_RETRYCOUNT)
-        {
-        Serial.println("Reset..");
-        ESP.restart();
-        }
-    Serial.print("ErrorCount ");
-    Serial.println(values.fail_count);
-    return values;
-    }
-#endif
-
 #ifdef SENSOR_BMP180
 Values ReadSensors::read_bmp180()
     {
@@ -123,19 +72,6 @@ Values ReadSensors::read_bmp180()
         /* Display some basic information on this sensor */
         #ifdef TRACE_INFO
         displaySensorDetails(Adafruit_BMP085_Unified bmp180);
-        /*
-        sensor_t sensor;
-        bmp180.getSensor(&sensor);
-            Serial.println("------------------------------------");
-            Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-            Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-            Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-            Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" hPa");
-            Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" hPa");
-            Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" hPa");
-            Serial.println("------------------------------------");
-            Serial.println("");
-        */
         #endif
 
         /* Display the results (barometric pressure is measure in hPa(mBar)) */
