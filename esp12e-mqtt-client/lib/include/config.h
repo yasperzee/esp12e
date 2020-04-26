@@ -30,6 +30,9 @@
 
 ------------------------------------------------------------------------------*/
 
+
+
+
 //*********************** Node specific Manual Configurations ******************
 
 // For RELEASE: 15min publish interval & Error traces only, comment 3 following lines.
@@ -43,38 +46,37 @@
     //#define DEEP_SLEEP
     //#define LIGHT_SLEEP
 
-// Select sensor connected.
-    #define SENSOR_BMP180
-    //#define SENSOR_BMP280
-    //#define SENSOR_BME280
-    //#define SENSOR_DHT22
-    //#define SENSOR_DHT11
-    //#define SENSOR_TEMT6000_ALONE
-
-// Select measuremens to publish
-    #define NODE_FEATURE_TEMP
-    #define NODE_FEATURE_BARO
-    #define NODE_FEATURE_ALTI
-    //#define NODE_FEATURE_HUMID
-    //#define NODE_FEATURE_AMBIENT_LIGHT // ESP12E only. Uses same GPIO as READ_VCC!
-    //#define NODE_FEATURE_READ_VCC // ESP12E only. Uses same GPIO as ALS!
-
-// DHT sensor publish Temperature only
-    //#define DHT_TEMP_ONLY
-
-// AppSW version. 1.X for nonos/ESP12E(ESP01) and v2.X for esp-idf/esp32
-    #define SW_VERSION "v1.0"
-
-// Select node-mcu in use
-    #define MCU_ESP01
-    //#define MCU_ESP12E
-
 // Define number of node, default is "00"
     #define NODE_NUM "01"
     //#define NODE_NUM "02"
     //#define NODE_NUM "03"
     //#define NODE_NUM "04"
     //#define NODE_NUM "05"
+
+// Select sensor connected.
+    //#define SENSOR_BMP180
+    //#define SENSOR_BMP280
+    //#define SENSOR_BME280
+    #define SENSOR_DHT22
+    //#define SENSOR_DHT11
+    //#define SENSOR_TEMT6000_ALONE
+// DHT sensor publish Temperature only
+    //#define DHT_TEMP_ONLY
+
+// Select measuremens to publish
+    #define NODE_FEATURE_TEMP
+    //#define NODE_FEATURE_BARO
+    //#define NODE_FEATURE_ALTI
+    #define NODE_FEATURE_HUMID
+    //#define NODE_FEATURE_AMBIENT_LIGHT // ESP12E only. Uses same GPIO as READ_VCC!
+    //#define NODE_FEATURE_READ_VCC // ESP12E only. Uses same GPIO as ALS!
+
+// AppSW version. 1.X for nonos/ESP12E(ESP01) and v2.X for esp-idf(FreeRTOS)/esp32
+    #define SW_VERSION "v1.0"
+
+// Select node-mcu in use
+    #define MCU_ESP01
+    //#define MCU_ESP12E
 
 //#ifdef DEMO
     //#define MQTT_SERVER "192.168.XX.XX" // Phone
@@ -85,19 +87,20 @@
     // Select node's Location
     #define LOCATION_NODE "Koti"
     // Select mosquitto server
-    //#define MQTT_SERVER "192.168.10.52" // Local Rpi3 with mosquitto
+    //#define MQTT_SERVER "192.168.10.61" // Local Rpi3 with mosquitto (Local, WiFi)
+    #define MQTT_SERVER "192.168.10.52" // Local Rpi3 with mosquitto (Local, LAN)
     //#define MQTT_SERVER "192.168.10.34" // Local W530 with mosquitto
-    #define MQTT_SERVER "192.168.10.63" // Local NP-510 with mosquitto
+    //#define MQTT_SERVER "192.168.10.63" // Local NP-510 with mosquitto
 
     // Uncomment one for room or define your ownone
-    //#define TOPIC_ROOM "IceBox"
-    //#define TOPIC_ROOM "Olohuone" //NODE-01
-    //#define TOPIC_ROOM "Ulkoilma" //NODE-02
-    //#define TOPIC_ROOM "Keittio"  //NODE-03
+    #define TOPIC_ROOM "IceBox"
+    //#define TOPIC_ROOM "Olohuone"
+    //#define TOPIC_ROOM "Ulkoilma"
+    //#define TOPIC_ROOM "Keittio"
     //#define TOPIC_ROOM "Parveke"
-    #define TOPIC_ROOM "MH-1"
+    //#define TOPIC_ROOM "MH-1"
     //#define TOPIC_ROOM "MH-2"
-    //#define TOPIC_ROOM "MH-3" //NODE-04
+    //#define TOPIC_ROOM "MH-3"
     //#define TOPIC_ROOM "Eteinen"
     //#define TOPIC_ROOM "Partsi"
     //#define TOPIC_ROOM "Kph-1"

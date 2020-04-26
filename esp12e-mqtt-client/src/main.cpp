@@ -93,9 +93,10 @@
 // includes
 #include <config.h>
 #include <mqtt_client.h>
-#include <read_sensors.h>
 #if defined(SENSOR_DHT11) || defined(SENSOR_DHT22)
 #include <read_DHT_sensors.h>
+#else
+#include <read_sensors.h>
 #endif
 
 MqttClient mqttClient;
